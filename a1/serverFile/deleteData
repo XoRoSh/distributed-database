@@ -1,0 +1,10 @@
+#!/bin/bash
+host=$1
+start=$2
+end=$3
+
+echo Deleting from $host range: $start - $end
+
+ssh "$host" "sqlite3 \"/virtual/$USER/database.db\" <<EOF
+DELETE FROM bitly WHERE hash BETWEEN $start AND $end;
+EOF"

@@ -1,0 +1,3 @@
+#!/usr/bin/gnuplot
+plot "basic.tsv" using 1:2 title 'squared' with points
+pause mouse close

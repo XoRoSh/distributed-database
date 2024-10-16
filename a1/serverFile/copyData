@@ -1,0 +1,30 @@
+#!/bin/bash
+new=$1
+replica=$2
+start=$3
+end=$4
+USER="`whoami`"
+CWD="`pwd`";
+
+# Start the new server
+ssh $new "cd \"$CWD/../serverSqlite\"; bash runit.bash;" &
+# ssh $replica "sqlite3 /virtual/$USER/database.db <<EOF .mode csv .output database.csv SELECT * FROM bitly WHERE hash BETWEEN 8600 AND 10000;"
+
+# Export the data from the replica server 
+ssh "$replica" "sqlite3 \"/virtual/$USER/database.db\" <<EOF
+.mode csv
+.output \"/virtual/$USER/output.csv\"
+SELECT * FROM bitly WHERE hash BETWEEN $start AND $end;
+.output stdout
+EOF"
+
+# Copy the exported data to the new server
+scp ${replica}:/virtual/$USER/output.csv ${new}:/virtual/$USER/
+
+# Import the data to the new server's database
+ssh "$new" "sqlite3 \"/virtual/$USER/database.db\" <<EOF
+.mode csv
+.import \"/virtual/$USER/output.csv\" bitly
+EOF"
+
+echo Copied

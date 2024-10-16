@@ -1,0 +1,20 @@
+#!/bin/bash
+CWD="`pwd`";
+
+echo Monitor started.
+
+while true;
+do
+	sleep 30 # Send request every 30 seconds
+	for server in `cat hosts`
+	do
+		# Send request to server to check status
+		curl -s -X GET "http://$server:1975/0" > /dev/null
+		if [ $? -ne 0 ];
+		then
+			echo $server is down...
+			echo Attempting to restart...
+			ssh $server "cd \"$CWD/../serverSqlite\"; java -classpath ".:sqlite-jdbc-3.39.3.0.jar" URLShortner;" &
+		fi
+	done
+done

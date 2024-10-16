@@ -1,0 +1,36 @@
+#!/bin/bash
+
+server_healing_file="serverHealing.txt"
+CWD="`pwd`";
+
+echo started healing
+while true; do
+while IFS= read -r input_string; do
+    sleep 3
+    # Split the line into server name and timestamp
+    server_name=$(echo "$input_string" | awk '{print $1}')
+    timestamp=$(echo "$input_string" | awk '{print $2, $3}')
+
+    # Perform a GET request to the server
+    echo Trying to ssh into a server $server_name
+    ssh $server_name "cd \"$CWD/../serverSqlite\"; java -classpath ".:sqlite-jdbc-3.39.3.0.jar" URLShortner;" &
+    sleep 3
+    curl -s -X GET "http://$server_name:1973/0" > /dev/null
+    if [ $? -ne 0 ]; then
+        echo "Cant heal $server_name is still down: $timestamp."
+    else
+        echo "Healing server $server_name"
+        # find server's index in the hosts.txt file:
+        index=$(grep -n "^$server_name$" hosts | cut -d: -f1)
+        #for zero based indexing
+        index=$((index - 1))
+        echo "Server at line: $index"
+        ../serverFile/healServerAtIndex $index
+
+        echo "HEALING WAS SUCCESSFUL"
+        sed -i "/^$server_name\b/d" "$server_healing_file"
+
+
+    fi
+done < "$server_healing_file"
+done

@@ -1,0 +1,5 @@
+#!/bin/bash
+host=$1
+
+# Send request to proxy to add the new server
+echo "AddNewServer server=${host}" | nc localhost 8080 &

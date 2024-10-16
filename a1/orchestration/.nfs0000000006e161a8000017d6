@@ -1,0 +1,31 @@
+#!/bin/bash
+CWD="`pwd`";
+
+echo Monitor started.
+
+server_healing_file="serverHealing.txt"
+server_failure_log="serverFailures.txt"
+
+./healingServers &
+echo Started self heaing.
+
+while true;
+do
+	sleep 3 # Send request every 10 seconds
+	for server in `cat hosts`
+	do
+		# Send request to server to check status
+		curl -s -X GET "http://$server:1900/0" > /dev/null
+		if [ $? -ne 0 ];
+		then
+			if ! grep -q "$server" "$server_healing_file"; then
+          current_timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+          echo "$server is down. Current time: $current_timestamp" >> $server_failure_log
+          echo "$server $current_timestamp" >> "$server_healing_file"
+			else
+			    echo "Server $server was already down"
+			fi
+
+		fi
+	done
+done

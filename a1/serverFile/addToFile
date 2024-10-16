@@ -1,0 +1,11 @@
+#!/bin/bash
+host=$1
+line=$2
+filename="../orchestration/hosts"
+
+# Add the new server to our config file
+if [ "$(wc -l < "$filename")" -lt "$line" ]; then 
+    echo $host >> $filename;
+else 
+    sed -i "${line}i ${host}" "$filename";
+fi
