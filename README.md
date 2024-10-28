@@ -12,5 +12,5 @@ We implemented :
 - self-healing of db servers
 - introduction of a new node
 
-To read more in deatails about any of these see **REPORT** 
+To read more in deatails about any of these see **Readme.pdf** 
 
